@@ -1,0 +1,7 @@
+# Ignore everything in this directory
+*
+# Except index.php
+!index.php
+# Except this file
+!.gitignore
+

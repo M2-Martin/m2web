@@ -1,0 +1,45 @@
+version: "3"
+services:
+    nginx:
+        restart: always
+        build: 
+           context: ./nginx
+           args:
+              baseimage: ${ARCH_IMAGE_REP}nginx:${ARCH_IMAGE_NGINX_VERSION:-${NGINX_VERSION}}
+              domain: ${DOMAIN}
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./wwwdata:/www/hosting/${DOMAIN}/${SUB}
+    php:
+        restart: always
+        build: 
+           context: ./php
+           args:
+              baseimage: php:${PHP_VERSION}-fpm
+              domain: ${DOMAIN}
+        volumes:
+            - ./wwwdata:/www/hosting/${DOMAIN}/${SUB}
+        tmpfs: /www/hosting/${DOMAIN}/tmp
+    mysql:
+        image: mariadb:${MARIADB_VERSION}
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+            MYSQL_DATABASE: "${DB_NAME}"
+            MYSQL_USER: "${DB_USERNAME}"
+            MYSQL_PASSWORD: "${DB_PASSWORD}"
+        restart: always
+        volumes:
+            - ./database:/var/lib/mysql
+    phpmyadmin:
+        image: ${ARCH_IMAGE_REP:-phpmyadmin/}phpmyadmin
+        environment:
+            PMA_HOST: mysql
+            MYSQL_USERNAME: "${DB_USERNAME}"
+            MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"  
+            PMA_USER: root
+            PMA_PASSWORD: root
+        ports:
+            - "8080:80"
+        restart: always
